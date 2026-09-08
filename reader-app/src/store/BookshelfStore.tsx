@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import AsyncStorage from '@react-native-async-storage/async-storage'
+import { userScopedStorage } from './userScopedStorage'
 
 export type BookshelfStatus = 'want-to-read' | 'reading' | 'read' | 'dropped'
 
@@ -91,7 +91,10 @@ export const useBookshelf = create<BookshelfState>()(
     }),
     {
       name: '@bookshelf',
-      storage: createJSONStorage(() => AsyncStorage)
+      storage: createJSONStorage(() => userScopedStorage),
+      // Hidratação é disparada pelo AuthContext (rehydrateUserStores) depois que
+      // o usuário ativo é conhecido, evitando ler o namespace errado no startup.
+      skipHydration: true
     }
   )
 )

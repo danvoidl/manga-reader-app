@@ -7,6 +7,8 @@ const SESSION_KEY = "mangadex_session";
 
 export interface StoredSession {
   username: string;
+  /** MangaDex user id (JWT `sub`); namespaces on-device data and Drive backup. */
+  userId: string;
   clientId: string;
   clientSecret: string;
   accessToken: string;

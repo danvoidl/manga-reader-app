@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import AsyncStorage from '@react-native-async-storage/async-storage'
+import { userScopedStorage } from './userScopedStorage'
 
 export type ReadingMode = 'horizontal' | 'vertical'
 
@@ -19,7 +19,9 @@ export const useReadingModeOverrides = create<ReadingModeState>()(
     }),
     {
       name: '@reading-mode-overrides',
-      storage: createJSONStorage(() => AsyncStorage)
+      storage: createJSONStorage(() => userScopedStorage),
+      // Hidratação disparada pelo AuthContext (rehydrateUserStores).
+      skipHydration: true
     }
   )
 )

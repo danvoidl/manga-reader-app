@@ -28,6 +28,8 @@ type Documents = {
     "\n  query LatestChapters($limit: Int) {\n    latestChapters(limit: $limit) {\n      id\n      chapter\n      title\n      groupName\n      externalUrl\n      manga {\n        ...CardFields\n      }\n    }\n  }\n": typeof types.LatestChaptersDocument,
     "\n  query AdjacentChapters($mangaId: ID!, $chapterId: ID!) {\n    adjacentChapters(mangaId: $mangaId, chapterId: $chapterId) {\n      next {\n        ...ChapterFields\n      }\n      prev {\n        ...ChapterFields\n      }\n    }\n  }\n": typeof types.AdjacentChaptersDocument,
     "\n  fragment ChapterFields on Chapter {\n    id\n    attributes {\n      chapter\n      title\n      translatedLanguage\n      externalUrl\n    }\n    relationships {\n      type\n      attributes {\n        ... on ScanlationGroupAttributes {\n          name\n        }\n      }\n    }\n  }\n": typeof types.ChapterFieldsFragmentDoc,
+    "\n  query SyncPull {\n    syncPull {\n      blob\n      updatedAt\n    }\n  }\n": typeof types.SyncPullDocument,
+    "\n  mutation SyncPush($blob: String!, $updatedAt: Float!) {\n    syncPush(blob: $blob, updatedAt: $updatedAt)\n  }\n": typeof types.SyncPushDocument,
     "\n  query Categories {\n    categories {\n      id\n      attributes {\n        name {\n          en\n          pt_br\n        }\n        group\n      }\n    }\n  }\n": typeof types.CategoriesDocument,
 };
 const documents: Documents = {
@@ -45,6 +47,8 @@ const documents: Documents = {
     "\n  query LatestChapters($limit: Int) {\n    latestChapters(limit: $limit) {\n      id\n      chapter\n      title\n      groupName\n      externalUrl\n      manga {\n        ...CardFields\n      }\n    }\n  }\n": types.LatestChaptersDocument,
     "\n  query AdjacentChapters($mangaId: ID!, $chapterId: ID!) {\n    adjacentChapters(mangaId: $mangaId, chapterId: $chapterId) {\n      next {\n        ...ChapterFields\n      }\n      prev {\n        ...ChapterFields\n      }\n    }\n  }\n": types.AdjacentChaptersDocument,
     "\n  fragment ChapterFields on Chapter {\n    id\n    attributes {\n      chapter\n      title\n      translatedLanguage\n      externalUrl\n    }\n    relationships {\n      type\n      attributes {\n        ... on ScanlationGroupAttributes {\n          name\n        }\n      }\n    }\n  }\n": types.ChapterFieldsFragmentDoc,
+    "\n  query SyncPull {\n    syncPull {\n      blob\n      updatedAt\n    }\n  }\n": types.SyncPullDocument,
+    "\n  mutation SyncPush($blob: String!, $updatedAt: Float!) {\n    syncPush(blob: $blob, updatedAt: $updatedAt)\n  }\n": types.SyncPushDocument,
     "\n  query Categories {\n    categories {\n      id\n      attributes {\n        name {\n          en\n          pt_br\n        }\n        group\n      }\n    }\n  }\n": types.CategoriesDocument,
 };
 
@@ -118,6 +122,14 @@ export function graphql(source: "\n  query AdjacentChapters($mangaId: ID!, $chap
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  fragment ChapterFields on Chapter {\n    id\n    attributes {\n      chapter\n      title\n      translatedLanguage\n      externalUrl\n    }\n    relationships {\n      type\n      attributes {\n        ... on ScanlationGroupAttributes {\n          name\n        }\n      }\n    }\n  }\n"): (typeof documents)["\n  fragment ChapterFields on Chapter {\n    id\n    attributes {\n      chapter\n      title\n      translatedLanguage\n      externalUrl\n    }\n    relationships {\n      type\n      attributes {\n        ... on ScanlationGroupAttributes {\n          name\n        }\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query SyncPull {\n    syncPull {\n      blob\n      updatedAt\n    }\n  }\n"): (typeof documents)["\n  query SyncPull {\n    syncPull {\n      blob\n      updatedAt\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation SyncPush($blob: String!, $updatedAt: Float!) {\n    syncPush(blob: $blob, updatedAt: $updatedAt)\n  }\n"): (typeof documents)["\n  mutation SyncPush($blob: String!, $updatedAt: Float!) {\n    syncPush(blob: $blob, updatedAt: $updatedAt)\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
