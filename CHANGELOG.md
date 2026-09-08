@@ -1,3 +1,16 @@
+# [1.3.0](https://github.com/danvoidl/Manga_Reader/compare/v1.2.1...v1.3.0) (2026-09-08)
+
+
+### Bug Fixes
+
+* **api:** rodar produção via tsx (npm start) no Render em vez de node dist ([c9c3f5a](https://github.com/danvoidl/Manga_Reader/commit/c9c3f5aae85ceb2e7f2c23645490564340e3e732))
+
+
+### Features
+
+* **api:** backend de sync em Postgres + limpeza e padronização de JSDoc ([5851fe9](https://github.com/danvoidl/Manga_Reader/commit/5851fe9835e39c90b7bf0923885db35ea85bcd6b))
+* **reader-app:** dados por conta e sync automático na nuvem ([bc63bd2](https://github.com/danvoidl/Manga_Reader/commit/bc63bd212a809e7e5a89b1f45a955b1738c7303c))
+
 # [1.3.0-beta.3](https://github.com/danvoidl/Manga_Reader/compare/v1.3.0-beta.2...v1.3.0-beta.3) (2026-09-08)
 
 
