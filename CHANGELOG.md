@@ -1,3 +1,10 @@
+# [1.3.0-beta.2](https://github.com/danvoidl/Manga_Reader/compare/v1.3.0-beta.1...v1.3.0-beta.2) (2026-09-02)
+
+
+### Bug Fixes
+
+* **api:** rodar produção via tsx (npm start) no Render em vez de node dist ([c9c3f5a](https://github.com/danvoidl/Manga_Reader/commit/c9c3f5aae85ceb2e7f2c23645490564340e3e732))
+
 # [1.3.0-beta.1](https://github.com/danvoidl/Manga_Reader/compare/v1.2.1...v1.3.0-beta.1) (2026-09-02)
 
 
