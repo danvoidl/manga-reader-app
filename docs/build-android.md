@@ -87,11 +87,24 @@ Guarde `release.keystore` num lugar seguro (gerenciador de senhas / backup). Ela
 2. Escolha a branch e (opcional) preencha o campo _note_.
 3. Clique em **Run workflow** e aguarde (~15–25 min).
 4. Ao terminar (job verde), abra o run e baixe o artifact
-   **`hokusai-manga-apk-<número>`** — dentro dele está o `app-release.apk`.
+   **`hokusai-manga-v<versão>-<número>`** — dentro dele está o
+   `hokusai-manga-v<versão>.apk` (a `<versão>` vem de `reader-app/package.json`, o bump
+   feito pelo semantic-release; o `<número>` é o run do Actions, só pra diferenciar
+   rebuilds da mesma versão).
 5. Instale no aparelho: transfira o arquivo e abra, ou via cabo:
    ```bash
-   adb install -r app-release.apk
+   adb install -r hokusai-manga-v<versão>.apk
    ```
+
+Além do artifact do run (temporário, 30 dias), o workflow **anexa o mesmo APK à GitHub
+Release da versão** (tag `v<versão>`, criada pelo semantic-release) — é o jeito mais
+permanente de baixar, direto na aba **Releases**. Se você rebuildar a mesma versão, o
+asset é sobrescrito (`--clobber`).
+
+> A release da versão precisa **já existir** quando o build roda. O `release.yml`
+> (semantic-release) cria a tag/release ao dar push na branch; se você disparar o
+> build-android antes disso, o passo de anexar falha porque não há release `v<versão>`.
+> Rode o build depois que a release da versão estiver publicada.
 
 Builds sucessivos usam a mesma keystore, então o APK novo instala **por cima** do
 anterior sem precisar desinstalar.

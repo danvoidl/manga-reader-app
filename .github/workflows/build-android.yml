@@ -1,7 +1,7 @@
 name: Build Android APK
 
 # Disparo manual: aba Actions -> "Build Android APK" -> Run workflow.
-# Gera um APK release assinado e o disponibiliza como artifact (não toca na sua máquina).
+# Gera um APK release assinado e o disponibiliza como artifact.
 on:
   workflow_dispatch:
     inputs:
@@ -9,6 +9,10 @@ on:
         description: "Rótulo opcional pra identificar este build (aparece no resumo)"
         required: false
         default: ""
+
+# Necessário para o `gh release upload` anexar o APK à release da versão.
+permissions:
+  contents: write
 
 jobs:
   build-apk:
@@ -41,8 +45,7 @@ jobs:
         run: bunx expo prebuild --platform android --no-install
 
       # Depois do prebuild: a pasta android/ (e os arquivos *.gradle) já existem,
-      # então o cache do Gradle encontra o que hashear. Antes daqui falhava com
-      # "No file matched to [**/*.gradle*, ...]".
+      # então o cache do Gradle encontra o que hashear.
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -59,10 +62,32 @@ jobs:
             -PMANGA_UPLOAD_KEY_ALIAS="${{ secrets.ANDROID_KEY_ALIAS }}" \
             -PMANGA_UPLOAD_KEY_PASSWORD="${{ secrets.ANDROID_KEY_PASSWORD }}"
 
+      # Versão atual do app 
+      - name: Ler versão do app
+        id: appver
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Renomear APK com a versão
+        run: |
+          mkdir -p "$RUNNER_TEMP/apk"
+          cp android/app/build/outputs/apk/release/app-release.apk \
+            "$RUNNER_TEMP/apk/hokusai-manga-v${{ steps.appver.outputs.version }}.apk"
+
       - name: Publicar APK como artifact
         uses: actions/upload-artifact@v4
         with:
-          name: hokusai-manga-apk-${{ github.run_number }}
-          path: reader-app/android/app/build/outputs/apk/release/app-release.apk
+          name: hokusai-manga-v${{ steps.appver.outputs.version }}-${{ github.run_number }}
+          path: ${{ runner.temp }}/apk/hokusai-manga-v${{ steps.appver.outputs.version }}.apk
           if-no-files-found: error
           retention-days: 30
+
+      # Anexa o APK à GitHub Release da versão (tag v<versão> criada pelo semantic-release).
+      # --clobber sobrescreve o asset se você rebuildar a mesma versão. Falha claramente
+      # se a release ainda não existir (ex.: buildou antes do release rodar naquela branch).
+      - name: Anexar APK à release da versão
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "v${{ steps.appver.outputs.version }}" \
+            "$RUNNER_TEMP/apk/hokusai-manga-v${{ steps.appver.outputs.version }}.apk" \
+            --clobber
