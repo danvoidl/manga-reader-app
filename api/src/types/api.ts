@@ -1,3 +1,4 @@
+/** Normalized upstream error, returned as the tuple's error slot. */
 export interface IApiError {
   statusCode: number
   message: string
@@ -5,12 +6,8 @@ export interface IApiError {
   errors: object[]
 }
 
-export interface IApiSucess {
-  success: boolean
-  message: string
-}
-
-export interface ListSuccess<D> extends IApiSucess {
+/** MangaDex list envelope (pagination metadata + the `data` payload). */
+export interface ListSuccess<D> {
   limit: number
   offset: number
   total: number
@@ -19,4 +16,5 @@ export interface ListSuccess<D> extends IApiSucess {
   data: D
 }
 
+/** Go-style result promise: `[null, data]` on success, `[error]` on failure. */
 export type ApiResp<T> = Promise<[null, T] | [IApiError]>

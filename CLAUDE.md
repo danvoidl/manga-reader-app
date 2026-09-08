@@ -23,8 +23,8 @@ The whole reader-app (home, Explore, manga detail, chapter reader) consumes the 
 ### api (run from `api/`)
 - `npm install`
 - `npm run dev` — hot-reloading dev server via `tsx watch` (serves on `http://localhost:4000`)
-- `npm run compile` — type-check + emit to `dist/`
-- `npm start` — compile then run `dist/index.js`
+- `npm run compile` — type-check + emit to `dist/` (used as a type-check gate; the emitted `dist/` is not what runs)
+- `npm start` — run via `tsx src/index.ts` (same as the Render `startCommand`). Native `node dist/index.js` does **not** work: `tsc` leaves the `~/*` path alias, directory imports (`./schemas`) and extensionless imports verbatim, which Node's ESM loader rejects — `tsx` resolves all three.
 - No tests (the `test` script intentionally exits 1).
 
 ## api architecture
@@ -79,9 +79,13 @@ Each user authenticates with their own MangaDex *personal API client*. Token **m
 - Screens live in the `src/app/(auth)/` group with its own `_layout.tsx` (initial route `login`): `login.tsx` (form) + `login-help.tsx` (how to obtain the client id/secret + privacy notice). Logout lives on the Perfil tab (`src/app/(tabs)/profile.tsx`); home is only reachable when authenticated.
 - Reusable form primitives live in `src/components/ui/` (`Input`, `Button`).
 
-### reader-app local data & backup
+### reader-app local data (per-account) & cloud sync
 
-On-device data is three AsyncStorage stores (Zustand `persist`): `@continue-reading`, `@bookshelf` (status + page bookmarks), `@reading-mode-overrides`. The auth session lives separately in the secure enclave (`expo-secure-store`) and is **not** treated as backup-able app data. Backup is **OS-level and automatic**: `app.json` sets `android.allowBackup: true` (Android Auto Backup → the user's Google Drive; the `expo-secure-store` plugin's backup rules exclude the enclave, so the AsyncStorage data is backed up but secrets/tokens are not), and iOS backs the same data up via iCloud. Restore happens on reinstall / new device; the session is not restored, so the user logs in again (which the gate requires anyway).
+On-device data is three Zustand `persist` stores: `@continue-reading`, `@bookshelf` (status + page bookmarks), `@reading-mode-overrides`. They persist through **`src/store/userScopedStorage.ts`** — a `StateStorage` wrapper over AsyncStorage that **namespaces every key by the active MangaDex user id** (real key `${name}:${userId}`, or `:anon` when logged out). So each account keeps its own data on the same device and account Y never sees account X's. The stores set `skipHydration: true`; `AuthContext` calls `setActiveUser(userId)` + `rehydrateUserStores()` (`src/store/rehydrateStores.ts`, which resets in-memory state first) on **login, logout, and startup restore**. The user id is the JWT `sub` of the MangaDex access token (`src/utils/jwt.ts`), stored on `StoredSession` and exposed as `useAuth().userId`.
+
+**Cloud sync/backup is automatic via the app's own `api/` backend** (`src/store/SyncContext.tsx`, mounted inside `AuthProvider`), using the **MangaDex account as identity** — no separate login/OAuth. Because `gqlRequest` (`src/services/graphql.ts`) already attaches the MangaDex access token to every call, sync reuses it; the server derives the blob owner by **verifying that token's signature** (`api/src/auth/verifyToken.ts`, `jose` against the MangaDex Keycloak JWKS) and reads/writes one row per user. `src/services/sync.ts` is a thin transport with two ops — `syncPull` (query) / `syncPush` (mutation) — carrying the blob as a JSON **string**; the server stores it in Postgres (`api/src/db.ts`, table `sync_blobs(user_id, blob jsonb, updated_at)`; `DATABASE_URL`, Supabase/Neon). On login it pulls and hydrates the stores; store changes are pushed debounced; conflicts are last-write-wins by `updatedAt` (a per-user watermark in `@sync-updated-at:{userId}`, enforced both client-side and in the upsert's `WHERE`). Sync status + "Sincronizar agora" live on the Perfil tab. (History: this replaced an opt-in Google Drive `appDataFolder` backend — dropped because the `drive.appdata` sensitive scope forces Google OAuth verification to scale beyond a manual test-user list; the `@react-native-google-signin` dep, `googleAuth.ts`/`googleDrive.ts`, and the `EXPO_PUBLIC_GOOGLE_*` vars were removed. **Privacy shift:** reading data now lives on the app owner's backend, not the user's own Drive — reflected in `src/app/(auth)/login-help.tsx`.)
+
+The auth session stays in the secure enclave (`expo-secure-store`), is never synced, and is not restored on reinstall (the gate requires a fresh login). **Note on Android Auto Backup:** `app.json` sets `android.allowBackup: true`, but the `expo-secure-store` config plugin injects backup rules that allowlist only the `sharedpref` domain — AsyncStorage actually stores everything in a SQLite DB (`RKStorage`, the `database` domain), which those rules **exclude**, so Auto Backup does **not** capture the stores. That's why the app data did not survive reinstall before cloud sync; the `api/` backend sync layer is now the intended persistence/sync path. (A config plugin adding `<include domain="database" .../>` could re-enable Auto Backup as an Android-only safety net, but is not currently applied.)
 
 ## Conventions
 

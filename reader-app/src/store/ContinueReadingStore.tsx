@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import AsyncStorage from '@react-native-async-storage/async-storage'
+import { userScopedStorage } from './userScopedStorage'
 
 const MAX_ENTRIES = 10
 
@@ -63,7 +63,9 @@ export const useContinueReading = create<ContinueReadingState>()(
     }),
     {
       name: '@continue-reading',
-      storage: createJSONStorage(() => AsyncStorage)
+      storage: createJSONStorage(() => userScopedStorage),
+      // Hidratação disparada pelo AuthContext (rehydrateUserStores).
+      skipHydration: true
     }
   )
 )

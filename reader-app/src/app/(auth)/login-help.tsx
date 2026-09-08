@@ -81,9 +81,14 @@ export default function LoginHelpScreen() {
             <AppText text="Sua privacidade" className="font-semibold" />
           </View>
           <AppText
-            text="Seu usuário, senha e secret são usados apenas para autenticar direto na MangaDex, a partir deste aparelho. O secret fica guardado com segurança no próprio celular (Keychain no iOS / Keystore no Android). Nada disso é enviado para o desenvolvedor do app nem para terceiros."
+            text="Seu usuário, senha e secret são usados apenas para autenticar direto na MangaDex, a partir deste aparelho. O secret fica guardado com segurança no próprio celular (Keychain no iOS / Keystore no Android). Essas credenciais não são enviadas para o desenvolvedor do app nem para terceiros."
             size="sub"
             className="text-white/70 leading-5"
+          />
+          <AppText
+            text="Sua estante e progresso de leitura são salvos no servidor do app (vinculados à sua conta MangaDex) para backup e sincronização entre aparelhos. Esses dados não incluem suas credenciais."
+            size="sub"
+            className="mt-3 text-white/70 leading-5"
           />
         </View>
       </ScrollView>

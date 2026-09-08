@@ -1,3 +1,4 @@
+/** A MangaDex manga with its included relationships (cover_art, author, ...). */
 export interface Manga {
   id: string
   type: string
@@ -51,6 +52,7 @@ interface MangaLinks {
   engtl: string
 }
 
+/** A MangaDex tag/genre (used for category filtering). */
 export interface Tag {
   id: string
   type: string

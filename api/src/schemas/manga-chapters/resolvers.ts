@@ -3,8 +3,10 @@ import { Manga } from '~/src/types/manga'
 import { dedupeByBestLanguage, LANG_PRIORITY, mangaRelId } from './utils'
 import { GraphQLContext } from '~/src/middleware/auth'
 
-// The require-auth plugin (src/index.ts) rejects unauthenticated operations
-// before any resolver runs, so `context.modules` is always present here.
+/**
+ * Request-scoped manga repository. The require-auth plugin (src/index.ts) rejects
+ * unauthenticated operations first, so `context.modules` is always present here.
+ */
 function repo(context: GraphQLContext) {
   return context.modules!.manga
 }
@@ -21,10 +23,10 @@ interface LatestChaptersArgs {
   limit: number
 }
 
-
-
+/** Resolvers for chapter lists, the reader's pages, and the global feed. */
 export const mangaChaptersResolver = {
   Query: {
+    /** Paginated chapter list for one manga, deduped to the best language. */
     chapters: async (
       parent: unknown,
       args: QueryArgs,
@@ -54,6 +56,7 @@ export const mangaChaptersResolver = {
       }
     },
 
+    /** Previous/next chapter around a given one, for reader navigation. */
     adjacentChapters: async (
       parent: unknown,
       args: QueryArgs,
@@ -79,6 +82,7 @@ export const mangaChaptersResolver = {
       }
     },
 
+    /** Full-size page image URLs for a chapter (from the at-home server). */
     chapterImgs: async (
       parent: unknown,
       args: QueryArgs,
@@ -97,6 +101,7 @@ export const mangaChaptersResolver = {
       return data
     },
 
+    /** Single chapter by id (used to resolve external-publisher URLs). */
     chapter: async (
       parent: unknown,
       args: { id: string },
@@ -109,10 +114,12 @@ export const mangaChaptersResolver = {
       return resp.data
     },
 
-    // Global "Latest Updates" feed: one card per chapter (not deduped), each
-    // carrying its manga. The chapter's manga relationship has no cover, so we
-    // batch-fetch the manga by id (with cover_art) and attach the real node —
-    // the Manga.coverUrl field resolver then builds the URL.
+    /**
+     * Global "Latest Updates" feed: one card per chapter (not deduped), each
+     * carrying its manga. The chapter's manga relationship has no cover, so we
+     * batch-fetch the manga by id (with cover_art) and attach the real node —
+     * the Manga.coverUrl field resolver then builds the URL.
+     */
     latestChapters: async (
       parent: unknown,
       args: LatestChaptersArgs,
@@ -177,11 +184,12 @@ export const mangaChaptersResolver = {
   },
 
   RelationshipAttributes: {
+    /** Map a relationship's attributes to its GraphQL union member, or null. */
     __resolveType(obj: RelationshipAttributes) {
       if ('name' in obj) return 'ScanlationGroupAttributes'
       if ('username' in obj) return 'UserAttributes'
 
-      return obj
+      return null
     }
   }
 }

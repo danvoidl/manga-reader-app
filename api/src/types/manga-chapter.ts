@@ -41,14 +41,16 @@ interface UserAttributes {
   version: number
 }
 
+/** Attributes of a chapter relationship, resolved as a GraphQL union. */
 export type RelationshipAttributes = ScanlationGroupAttributes | UserAttributes
 
-export interface Relationship {
+interface Relationship {
   id: string
   type: 'scanlation_group' | 'manga' | 'user'
   attributes: RelationshipAttributes
 }
 
+/** A MangaDex chapter with its included relationships (group, manga, ...). */
 export interface Chapter {
   id: string
   type: string
@@ -56,13 +58,12 @@ export interface Chapter {
   relationships: [Relationship]
 }
 
-
+/** At-home server response used to assemble full-size page image URLs. */
 export interface GetChapterImgs {
   result: string
   baseUrl: string
   chapter: {
     hash: string
     data: string[]
-    dataSaver: string[]
   }
 }

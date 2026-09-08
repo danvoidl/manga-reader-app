@@ -29,13 +29,15 @@ const DEFAULT_LIMIT = 96
 
 type MangaRepo = ApiModules['manga']
 
-// The require-auth plugin (src/index.ts) rejects unauthenticated operations
-// before any resolver runs, so `context.modules` is always present here.
+/**
+ * Request-scoped manga repository. The require-auth plugin (src/index.ts) rejects
+ * unauthenticated operations first, so `context.modules` is always present here.
+ */
 function repo(context: GraphQLContext): MangaRepo {
   return context.modules!.manga
 }
 
-// Shared helper: fetch a manga list with a given sort order, swallowing errors.
+/** Fetch a manga list with a given sort order, returning [] on error. */
 async function fetchMangas(
   manga: MangaRepo,
   order: Record<string, SortOrder>,
@@ -56,10 +58,13 @@ async function fetchMangas(
   return resp.data
 }
 
+/** Resolvers for manga lists, detail, categories, and cover URLs. */
 export const mangaResolvers = {
   Query: {
+    /** Most-followed manga (default home list). */
     mangas: async (parent: unknown, args: unknown, context: GraphQLContext) =>
       fetchMangas(repo(context), { followedCount: 'desc' }),
+    /** Single manga detail by id. */
     manga: async (
       parent: unknown,
       args: { id: string },
@@ -71,17 +76,21 @@ export const mangaResolvers = {
 
       return resp.data
     },
+    /** Newest manga by creation date. */
     recentlyAdded: async (
       parent: unknown,
       args: ListArgs,
       context: GraphQLContext
     ) => fetchMangas(repo(context), { createdAt: 'desc' }, args.limit),
+
+    /** Manga ordered by rating. */
     highestRanking: async (
       parent: unknown,
       args: ListArgs,
       context: GraphQLContext
     ) => fetchMangas(repo(context), { rating: 'desc' }, args.limit),
-    // Recently added (last 30 days) ordered by rating — powers the home banner.
+
+    /** Recently added (last 30 days) ordered by rating — powers the home banner. */
     topRatedRecent: async (
       parent: unknown,
       args: ListArgs,
@@ -99,6 +108,8 @@ export const mangaResolvers = {
         createdAtSince
       )
     },
+
+    /** Most-followed manga filtered by tag/genre ids (home genre rows). */
     mangasByTag: async (
       parent: unknown,
       args: { includedTags: string[]; limit?: number },
@@ -110,6 +121,8 @@ export const mangaResolvers = {
         args.limit,
         args.includedTags
       ),
+
+    /** All available tags/genres (for the Explore filters). */
     categories: async (
       parent: unknown,
       args: unknown,
@@ -121,9 +134,12 @@ export const mangaResolvers = {
 
       return resp.data
     },
-    // Flexible Explore query: combines an optional title, multiple sort criteria
-    // (order[<field>]=asc|desc) and included tag ids in a single call. Reuses
-    // getManga, which already supports all four inputs.
+
+    /**
+     * Flexible Explore query: combines an optional title, multiple sort criteria
+     * (order[<field>]=asc|desc) and included tag ids in a single call. Reuses
+     * getManga, which already supports all four inputs.
+     */
     exploreMangas: async (
       parent: unknown,
       args: ExploreArgs,
@@ -157,14 +173,18 @@ export const mangaResolvers = {
     }
   },
   Manga: {
+    /** Keep only relationships that carry a fileName (i.e. cover_art). */
     relationships: (parent: Manga) => {
       return parent.relationships.filter(
         (rel) => rel.attributes && rel.attributes.fileName
       )
     },
-    // Build the cover URL server-side from the cover_art relationship so the
-    // client never has to assemble it. `size` picks the thumbnail variant
-    // (e.g. 256/512); 0 returns the original.
+    
+    /**
+     * Build the cover URL server-side from the cover_art relationship so the
+     * client never has to assemble it. `size` picks the thumbnail variant
+     * (e.g. 256/512); 0 returns the original.
+     */
     coverUrl: (parent: Manga, args: CoverUrlArgs) => {
       const cover = parent.relationships.find(
         (rel) => rel.type === 'cover_art' && rel.attributes?.fileName

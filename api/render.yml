@@ -4,22 +4,21 @@ services:
     runtime: node
     rootDir: api
     plan: free
+    # compile roda como gate de type-check; a execução é via tsx (npm start),
+    # que resolve os path aliases (~/*), imports de diretório e sem extensão —
+    # coisas que o `node` puro sobre o dist/ ESM não aceita.
     buildCommand: npm install && npm run compile
-    startCommand: node ./dist/index.js
+    startCommand: npm start
     envVars:
       - key: BASE_URL
         sync: false
-      - key: AUTH_BASE_URL
-        sync: false
       - key: UPLOAD_BASE_URL
         sync: false
-      - key: MD_USERNAME
+      # Postgres externo (Supabase/Neon) que guarda o backup por usuário.
+      - key: DATABASE_URL
         sync: false
-      - key: MD_PASSWORD
+      # Realm Keycloak da MangaDex — verificação de assinatura dos access tokens.
+      - key: MANGADEX_ISSUER
         sync: false
-      - key: CLIENT_ID
-        sync: false
-      - key: CLIENT_SECRET
-        sync: false
-      - key: GRANT_TYPE
+      - key: MANGADEX_JWKS_URL
         sync: false

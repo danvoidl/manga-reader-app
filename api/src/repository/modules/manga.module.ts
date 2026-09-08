@@ -6,7 +6,9 @@ import { Chapter, GetChapterImgs } from '~/src/types/manga-chapter'
 type SortOrder = 'asc' | 'desc'
 type MangaOrder = Record<string, SortOrder>
 
+/** MangaDex manga/chapter endpoints, encapsulating their query-param quirks. */
 class PostModule extends FetchFactory<any> {
+  /** Search/list manga by name, sort order, tags and creation date. */
   async getManga(
     mangaName = '',
     limit = 96,
@@ -40,8 +42,10 @@ class PostModule extends FetchFactory<any> {
     })
   }
 
-  // Look up specific manga by id (with cover_art) — used to resolve covers for
-  // the global latest-chapters feed, whose manga relationships carry no cover.
+  /**
+   * Look up specific manga by id (with cover_art) — used to resolve covers for
+   * the global latest-chapters feed, whose manga relationships carry no cover.
+   */
   async getMangasByIds(
     ids: string[]
   ): Promise<ApiResp<ListSuccess<Manga[]>>> {
@@ -58,8 +62,10 @@ class PostModule extends FetchFactory<any> {
     })
   }
 
-  // Global latest chapter uploads across all manga (order[readableAt]=desc),
-  // no language filter — mirrors MangaDex's "Latest Updates" feed.
+  /**
+   * Global latest chapter uploads across all manga (order[readableAt]=desc),
+   * no language filter — mirrors MangaDex's "Latest Updates" feed.
+   */
   async getLatestChapters(
     limit = 30
   ): Promise<ApiResp<ListSuccess<Chapter[]>>> {
@@ -77,6 +83,7 @@ class PostModule extends FetchFactory<any> {
     })
   }
 
+  /** All manga tags/genres. */
   async getTags(): Promise<ApiResp<ListSuccess<Tag[]>>> {
     return this.call({
       method: 'GET',
@@ -84,6 +91,7 @@ class PostModule extends FetchFactory<any> {
     })
   }
 
+  /** Single manga by id, including cover_art and author. */
   async getMangaById(id: string): Promise<ApiResp<ListSuccess<Manga>>> {
     return this.call({
       method: 'GET',
@@ -96,6 +104,7 @@ class PostModule extends FetchFactory<any> {
     })
   }
 
+  /** A manga's chapter feed, filtered to the given translated languages. */
   async getMangaChapters(
     mangaId: string,
     translatedLanguages: string[],
@@ -117,8 +126,10 @@ class PostModule extends FetchFactory<any> {
     })
   }
 
-  // Single chapter by id (with scanlation_group) — used to resolve a chapter's
-  // externalUrl for chapters hosted by an official publisher (no at-home pages).
+  /**
+   * Single chapter by id (with scanlation_group) — used to resolve a chapter's
+   * externalUrl for chapters hosted by an official publisher (no at-home pages).
+   */
   async getChapterById(id: string): Promise<ApiResp<{ data: Chapter }>> {
     return this.call({
       method: 'GET',
@@ -131,6 +142,7 @@ class PostModule extends FetchFactory<any> {
     })
   }
 
+  /** At-home server info for a chapter (base URL + page file hashes). */
   async getMangaChapterImgs(
     chapterId: string
   ): Promise<ApiResp<GetChapterImgs>> {

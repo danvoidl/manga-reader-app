@@ -5,6 +5,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider, useAuth } from "@/store/AuthContext";
+import { SyncProvider } from "@/store/SyncContext";
 import { queryClient } from "@/services/queryClient";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import "../../global.css";
@@ -49,8 +50,10 @@ export default function RootLayout() {
       <QueryClientProvider client={queryClient}>
         <KeyboardProvider>
           <AuthProvider>
-            <StatusBar style="light" />
-            <RootNavigator />
+            <SyncProvider>
+              <StatusBar style="light" />
+              <RootNavigator />
+            </SyncProvider>
           </AuthProvider>
         </KeyboardProvider>
       </QueryClientProvider>

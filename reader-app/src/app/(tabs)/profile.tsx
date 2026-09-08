@@ -4,9 +4,19 @@ import Icon from "@react-native-vector-icons/material-design-icons";
 import AppText from "@/components/AppText";
 import Button from "@/components/ui/Button";
 import { useAuth } from "@/store/AuthContext";
+import { useSync } from "@/store/SyncContext";
+
+function formatLastSynced(at: number | null): string {
+  if (!at) return "ainda não sincronizado";
+  const diffMin = Math.floor((Date.now() - at) / 60000);
+  if (diffMin < 1) return "agora mesmo";
+  if (diffMin < 60) return `há ${diffMin} min`;
+  return new Date(at).toLocaleString("pt-BR");
+}
 
 export default function ProfileScreen() {
   const { username, logout } = useAuth();
+  const { syncing, lastSyncedAt, syncNow } = useSync();
 
   function confirmLogout() {
     Alert.alert(
@@ -44,6 +54,43 @@ export default function ProfileScreen() {
               text={username ?? "—"}
               size="text"
               className="font-semibold"
+            />
+          </View>
+        </View>
+
+        {/* Backup na nuvem (automático, atrelado à conta MangaDex) */}
+        <View className="mt-4 rounded-xl bg-black/20 p-4">
+          <View className="flex-row items-center gap-3">
+            <Icon name="cloud-check-outline" size={22} color="#AD89FF" />
+            <AppText
+              text="Backup na nuvem"
+              size="text"
+              className="font-semibold"
+            />
+          </View>
+
+          <AppText
+            text="Sua estante e progresso são salvos automaticamente na sua conta. Ao entrar em outro aparelho, seus dados voltam."
+            size="xs"
+            className="mt-2 text-white/50"
+          />
+          <AppText
+            text={
+              syncing
+                ? "Sincronizando…"
+                : `Última sincronização: ${formatLastSynced(lastSyncedAt)}`
+            }
+            size="xs"
+            className="mt-1 text-white/50"
+          />
+          <View className="mt-4">
+            <Button
+              title="Sincronizar agora"
+              variant="ghost"
+              icon="sync"
+              onPress={() => void syncNow()}
+              loading={syncing}
+              className="border border-callout/40"
             />
           </View>
         </View>
