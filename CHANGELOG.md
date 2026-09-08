@@ -1,3 +1,10 @@
+# [1.3.0-beta.3](https://github.com/danvoidl/Manga_Reader/compare/v1.3.0-beta.2...v1.3.0-beta.3) (2026-09-08)
+
+
+### Features
+
+* **reader-app:** dados por conta e sync automático na nuvem ([bc63bd2](https://github.com/danvoidl/Manga_Reader/commit/bc63bd212a809e7e5a89b1f45a955b1738c7303c))
+
 # [1.3.0-beta.2](https://github.com/danvoidl/Manga_Reader/compare/v1.3.0-beta.1...v1.3.0-beta.2) (2026-09-02)
 
 
